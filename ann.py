@@ -60,7 +60,7 @@ def prep_pipeline(X, binomial, categorical):
     return X
 
 
-# Correcting X through the pipeline; Removing empty strings by the mean of the column
+## Correcting X through the pipeline; Removing empty strings by the mean of the column
 X = prep_pipeline(X, BINOMIAL_COLS, CATEGORICAL_COLS)
 X[:, -1] = pd.to_numeric(X[:, -1], errors='coerce')
 
@@ -68,23 +68,23 @@ imputer = SimpleImputer(missing_values=np.nan, strategy="mean")
 imputer = imputer.fit(X[:, -1].reshape(-1, 1))
 X[:, -1] = imputer.transform(X[:, -1].reshape(-1, 1)).reshape(1, -1)[0]
 
-# Saving corrected X
+## Saving corrected X
 pd.DataFrame(X).to_csv("X.csv", index=False)
 
-# Encoding Churn from Yes/No to 0/1
+## Encoding Churn from Yes/No to 0/1
 labelencoder_Y = LabelEncoder()
 y = labelencoder_Y.fit_transform(y)
 
-# Splitting the dataset into the Training set and Test set
+## Splitting the dataset into the Training set and Test set
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
-# Feature Scaling
+## Feature Scaling
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
 
 
-# Now, let's make the ANN
+## Now, let's make the ANN
 def build_classifier(optimizer="rmsprop", nb_layers=1, dropout=False, rate=.1):
     """Classifier Builder's docstring.
 
@@ -138,7 +138,7 @@ def build_classifier(optimizer="rmsprop", nb_layers=1, dropout=False, rate=.1):
 
 classifier = KerasClassifier(build_fn=build_classifier)
 
-# Setting parameters to pass into a GridSearchCV for Hyperparameters computation
+## Setting parameters to pass into a GridSearchCV for Hyperparameters computation
 parameters = {
     "batch_size": [10, 32],
     "epochs": [100, 500],
@@ -155,11 +155,11 @@ grid_search = GridSearchCV(estimator=classifier,
 
 grid_search = grid_search.fit(X_train, y_train)
 
-# Getting best parameters from the GridSearchCV
+## Getting best parameters from the GridSearchCV
 best_parameters = grid_search.best_params_
 best_accuracy = grid_search.best_score_
 
-# Building and Fitting the ANN with bests parameters
+## Building and Fitting the ANN with bests parameters
 classifier = build_classifier(optimizer=best_parameters.get("optimizer"),
                               nb_layers=best_parameters.get("nb_layers"),
                               dropout=best_parameters.get("dropout"))
@@ -168,10 +168,10 @@ classifier.fit(X_train,
                batch_size=best_parameters.get("batch_size"),
                epochs=best_parameters.get("epochs"))
 
-# Saving the model for reuse
+## Saving the model for reuse
 classifier.save("churn.h5")
 
-# Making the predictions and evaluating the model
+## Making the predictions and evaluating the model
 y_pred = classifier.predict(X_test)
 y_pred = (y_pred > .5)
 
